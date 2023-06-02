@@ -1,14 +1,16 @@
-import presetWeapp from 'unocss-preset-weapp'
-import { defineConfig } from 'unocss'
 import {
-  transformerAttributify,
-  transformerClass
-} from 'unocss-preset-weapp/transformer'
+  defineConfig,
+  presetAttributify,
+  presetUno,
+  transformerDirectives,
+  transformerVariantGroup
+} from 'unocss'
 
 export default defineConfig({
   presets: [
     // https://github.com/MellowCo/unocss-preset-weapp
-    presetWeapp()
+    presetAttributify(),
+    presetUno()
   ],
   shortcuts: [
     {
@@ -21,10 +23,5 @@ export default defineConfig({
       'text-c4': 'color-#000/25'
     }
   ],
-  transformers: [
-    // https://github.com/MellowCo/unocss-preset-weapp/tree/main/src/transformer/transformerAttributify
-    transformerAttributify(),
-    // https://github.com/MellowCo/unocss-preset-weapp/tree/main/src/transformer/transformerClass
-    transformerClass()
-  ]
+  transformers: [transformerDirectives(), transformerVariantGroup()]
 })

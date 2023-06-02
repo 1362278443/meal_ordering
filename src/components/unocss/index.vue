@@ -10,8 +10,8 @@
       class="bg-[url(https://img.cdn.sugarat.top/mdImg/MTY2ODA4OTc3MjcyMg==unocss-icon-gray.svg)]"
     ></view>
 
-    <view class="bg-#3498db/20 text-#3498db rounded" p="x2 y1"
-      >unocss demo</view
-    >
+    <view class="bg-#3498db/20 text-#3498db rounded" p="x2 y1">
+      unocss demo
+    </view>
   </view>
 </template>
