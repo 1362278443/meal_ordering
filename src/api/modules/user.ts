@@ -18,7 +18,13 @@ function getCode(phone: string): Promise<{ num: number }> {
     }
   })
 }
+
+function logout() {
+  return http.post('user/logout', {})
+}
+
 export default {
   login,
-  getCode
+  getCode,
+  logout
 }
