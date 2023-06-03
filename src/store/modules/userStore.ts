@@ -4,9 +4,11 @@ interface userStore {
   id?: string | number
 }
 
-export const useUserStore = defineStore({
+const useUserStore = defineStore({
   id: 'user',
   state: (): userStore => ({}),
   getters: {},
   actions: {}
 })
+
+export default useUserStore

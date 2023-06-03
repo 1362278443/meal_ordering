@@ -7,7 +7,7 @@ interface authStore {
   token?: string
 }
 
-export const useAuthStore = defineStore({
+const useAuthStore = defineStore({
   id: 'auth',
   state: (): authStore => ({
     token: undefined
@@ -54,3 +54,5 @@ export const useAuthStore = defineStore({
     // },
   }
 })
+
+export default useAuthStore

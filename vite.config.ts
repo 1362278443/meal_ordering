@@ -4,12 +4,14 @@ import path from 'path'
 import UnoCSS from 'unocss/vite'
 import TransformPages from 'uni-read-pages-vite'
 
+import { presetUno } from 'unocss'
+
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [
     uni(),
     // https://github.com/antfu/unocss
-    UnoCSS()
+    UnoCSS({ presets: [presetUno()] })
   ],
   define: {
     ROUTES: new TransformPages().routes // 注入路由表

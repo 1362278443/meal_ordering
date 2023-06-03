@@ -1,4 +1,4 @@
-import { useAuthStore } from '@/store/modules/authStore'
+import { useAuthStore } from '@/store'
 import { Router } from 'uni-mini-router/lib/interfaces'
 
 export function createRouterGuard(router: Router) {
