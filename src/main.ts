@@ -1,7 +1,7 @@
 import { createSSRApp } from 'vue'
 import * as Pinia from 'pinia'
 // @ts-ignore
-import uView from 'vk-uview-ui'
+import uviewPlus from 'uview-plus'
 import App from './App.vue'
 import router from './router'
 
@@ -11,7 +11,7 @@ import 'uno.css'
 export function createApp() {
   const app = createSSRApp(App)
   app.use(Pinia.createPinia())
-  app.use(uView)
+  app.use(uviewPlus)
   app.use(router)
   return {
     app,
