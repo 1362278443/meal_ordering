@@ -1,10 +1,7 @@
 import http from '../http'
 
-function login(account: string, pwd: string) {
-  return http.post('user/login', {
-    account,
-    pwd
-  })
+function login(params: LoginParams) {
+  return http.post<LoginModel>('user/login', params)
 }
 
 /**

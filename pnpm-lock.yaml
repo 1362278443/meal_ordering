@@ -21,6 +21,7 @@ specifiers:
   '@dcloudio/uni-quickapp-webview': 3.0.0-alpha-3080320230523001
   '@dcloudio/uni-stacktracey': 3.0.0-alpha-3080320230523001
   '@dcloudio/vite-plugin-uni': 3.0.0-alpha-3080320230523001
+  '@types/crypto-js': ^4.1.1
   '@types/node': ^17.0.45
   '@typescript-eslint/eslint-plugin': ^5.59.8
   '@typescript-eslint/parser': ^5.59.8
@@ -71,6 +72,7 @@ dependencies:
   '@dcloudio/uni-mp-toutiao': 3.0.0-alpha-3080320230523001_postcss@8.4.24+vue@3.2.47
   '@dcloudio/uni-mp-weixin': 3.0.0-alpha-3080320230523001_postcss@8.4.24+vue@3.2.47
   '@dcloudio/uni-quickapp-webview': 3.0.0-alpha-3080320230523001_postcss@8.4.24+vue@3.2.47
+  '@types/crypto-js': 4.1.1
   '@vitejs/plugin-vue': 4.2.3_vite@4.0.3+vue@3.2.47
   axios: 0.27.2
   cz-git: 1.6.1
@@ -3318,6 +3320,10 @@ packages:
   /@types/chai/4.3.5:
     resolution: {integrity: sha512-mEo1sAde+UCE6b2hxn332f1g1E8WfYRu6p5SvTKr2ZKC1f7gFJXk4h5PyGP9Dt6gCaG8y8XhwnXWC6Iy2cmBng==}
     dev: true
+
+  /@types/crypto-js/4.1.1:
+    resolution: {integrity: sha512-BG7fQKZ689HIoc5h+6D2Dgq1fABRa0RbBWKBd9SP/MVRVXROflpm5fhwyATX5duFmbStzyzyycPB8qUYKDH3NA==}
+    dev: false
 
   /@types/eslint/8.40.0:
     resolution: {integrity: sha512-nbq2mvc/tBrK9zQQuItvjJl++GTN5j06DaPtp3hZCpngmG6Q3xoyEmd0TwZI0gAy/G1X0zhGBbr2imsGFdFV0g==}
