@@ -29,6 +29,7 @@ import { onLoad } from '@dcloudio/uni-app'
 import { useRouter } from 'uni-mini-router'
 
 const pageQuery = ref<Record<string, any>>({})
+
 onLoad((query: any) => {
   pageQuery.value = query
 })

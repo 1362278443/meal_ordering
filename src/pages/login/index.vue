@@ -25,7 +25,7 @@
 import { useAuthStore } from '@/store'
 import { Toast } from '@/utils/uniapi/prompt'
 import { userApi } from '@/api'
-import { computed, ref } from 'vue'
+import { StyleValue, computed, ref } from 'vue'
 import { onLoad } from '@dcloudio/uni-app'
 import { useRouter } from 'uni-mini-router'
 
@@ -61,8 +61,9 @@ const submit = (e: any) => {
     Toast('请输入正确的手机号', { duration: 1500 })
   }
 }
+
 const inputStyle = computed(() => {
-  let style = {}
+  let style: StyleValue = {}
   if (tel.value) {
     style.color = '#fff'
     style.backgroundColor = uni.$u.color['warning']
