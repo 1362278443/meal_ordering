@@ -44,6 +44,9 @@ dependencies:
   '@dcloudio/uni-quickapp-webview':
     specifier: 3.0.0-alpha-3080320230523001
     version: 3.0.0-alpha-3080320230523001(postcss@8.4.24)(ts-node@10.9.1)(vue@3.2.47)
+  '@ttou/uview-typings':
+    specifier: ^2.0.4
+    version: 2.0.4
   '@types/crypto-js':
     specifier: ^4.1.1
     version: 4.1.1
@@ -3335,6 +3338,10 @@ packages:
 
   /@tsconfig/node16@1.0.4:
     resolution: {integrity: sha512-vxhUy4J8lyeyinH7Azl1pdd43GJhZH/tP2weN8TntQblOY+A0XbT8DJk1/oCPuOOyg/Ja757rG0CgHcWC8OfMA==}
+
+  /@ttou/uview-typings@2.0.4:
+    resolution: {integrity: sha512-VNAxHMOKT8A0Gjx5zvcv7/sm6fsX8JX452cxLqemgZgihrda+UbHdJn1BXG5OiRF5M7m9ZjD3N03wVd9UIILVg==}
+    dev: false
 
   /@types/babel__core@7.20.1:
     resolution: {integrity: sha512-aACu/U/omhdk15O4Nfb+fHgH/z3QsfQzpnvRZhYhThms83ZnAOZz7zZAWO7mn2yyNQaA4xTO8GLK3uqFU4bYYw==}

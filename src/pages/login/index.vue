@@ -25,7 +25,7 @@
 import { useAuthStore } from '@/store'
 import { Toast } from '@/utils/uniapi/prompt'
 import { userApi } from '@/api'
-import { reactive, ref } from 'vue'
+import { computed, ref } from 'vue'
 import { onLoad } from '@dcloudio/uni-app'
 import { useRouter } from 'uni-mini-router'
 
@@ -36,10 +36,7 @@ onLoad((query: any) => {
 
 const router = useRouter()
 
-const form = reactive({
-  email: 'uni-app@test.com',
-  password: 'Vue3_Ts_Vite'
-})
+const tel = ref('')
 
 const authStore = useAuthStore()
 
@@ -52,7 +49,27 @@ const submit = (e: any) => {
   //     router.back()
   //   }, 1500)
   // })
+
+  if (uni.$u.test.mobile(tel.value)) {
+    router.push({
+      name: 'code',
+      params: {
+        tel: tel.value
+      }
+    })
+  } else {
+    Toast('请输入正确的手机号', { duration: 1500 })
+  }
 }
+const inputStyle = computed(() => {
+  let style = {}
+  if (tel.value) {
+    style.color = '#fff'
+    style.backgroundColor = uni.$u.color['warning']
+  }
+  console.log(style)
+  return style
+})
 </script>
 
 <style lang="scss" scoped>

@@ -2,12 +2,19 @@
   "pages": [
     //pages数组中第一项表示应用启动页，参考：https://uniapp.dcloud.io/collocation/pages
     {
+      "name": "Login",
+      "path": "pages/login/index",
+      "meta": {
+        "ignoreAuth": true
+      }
+    },
+    {
       "name": "Home",
       "path": "pages/index/index"
     },
     {
-      "name": "Login",
-      "path": "pages/login/index",
+      "name": "code",
+      "path": "pages/login/code",
       "meta": {
         "ignoreAuth": true
       }
