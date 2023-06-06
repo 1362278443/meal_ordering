@@ -3,6 +3,7 @@ import uni from '@dcloudio/vite-plugin-uni'
 import path from 'path'
 import UnoCSS from 'unocss/vite'
 import TransformPages from 'uni-read-pages-vite'
+import { viteMockServe } from 'vite-plugin-mock'
 
 import { presetUno } from 'unocss'
 
@@ -11,7 +12,11 @@ export default defineConfig({
   plugins: [
     uni(),
     // https://github.com/antfu/unocss
-    UnoCSS({ presets: [presetUno()] })
+    UnoCSS({ presets: [presetUno()] }),
+    viteMockServe({
+      logger: false,
+      mockPath: './src/mock/'
+    })
   ],
   define: {
     ROUTES: new TransformPages().routes // 注入路由表

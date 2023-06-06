@@ -76,6 +76,7 @@
     "@dcloudio/uni-cli-shared": "3.0.0-alpha-3080320230523001",
     "@dcloudio/uni-stacktracey": "3.0.0-alpha-3080320230523001",
     "@dcloudio/vite-plugin-uni": "3.0.0-alpha-3080320230523001",
+    "@types/mockjs": "^1.0.7",
     "@types/node": "^17.0.45",
     "@typescript-eslint/eslint-plugin": "^5.59.8",
     "@typescript-eslint/parser": "^5.59.8",
@@ -98,6 +99,7 @@
     "unocss-preset-weapp": "^0.2.5",
     "vite": "4.0.3",
     "vite-plugin-eslint": "^1.8.1",
+    "vite-plugin-mock": "^3.0.0",
     "vitest": "^0.16.0"
   },
   "simple-git-hooks": {
