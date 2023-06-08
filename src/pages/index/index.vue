@@ -38,20 +38,23 @@
           scroll-with-animation
           scroll-y
         >
-          <view class="wrapper">
-            <view
-              class="menu"
-              :id="`menu-${item.id}`"
-              :class="{ current: item.id === currentCateId }"
-              v-for="(item, index) in categories"
-              :key="index"
-              @tap="handleMenuTap(item.id)"
-            >
-              <text>{{ item.name }}</text>
-              <view class="dot" v-show="menuCartNum(item.id)">{{
-                menuCartNum(item.id)
-              }}</view>
-            </view>
+          <view
+            class="menu"
+            :id="`menu-${item.id}`"
+            :class="{ current: item.id === currentCateId }"
+            v-for="(item, index) in categories"
+            :key="index"
+            @tap="handleMenuTap(item.id)"
+          >
+            <text>{{ item.name }}</text>
+            <u-badge
+              absolute
+              bg-color="#FFC711"
+              offset="[8rpx, 10rpx]"
+              type="success"
+              :value="menuCartNum(item.id)"
+              max="99"
+            ></u-badge>
           </view>
         </scroll-view>
         <!-- 商品列表 -->
@@ -77,43 +80,38 @@
                     <view class="price_and_action">
                       <text class="price">￥{{ item.price }}</text>
                       <view class="btn-group" v-if="item.use_property">
-                        <button
+                        <u-button
+                          class="mr-3"
+                          shape="circle"
                           type="primary"
-                          class="btn property_btn"
-                          hover-class="none"
-                          size="mini"
-                          @tap="showGoodDetailModal(item, item)"
+                          :color="$u.color.primary"
+                          @click="showGoodDetailModal(item, item)"
+                          size="small"
                         >
                           选规格
-                        </button>
+                        </u-button>
+
                         <view class="dot" v-show="goodCartNum(item.id)">{{
                           goodCartNum(item.id)
                         }}</view>
                       </view>
                       <view class="btn-group" v-else>
-                        <button
-                          type="default"
+                        <round-button
                           v-show="goodCartNum(item.id)"
-                          plain
-                          class="btn reduce_btn"
-                          size="mini"
-                          hover-class="none"
-                          @tap="handleReduceFromCart(item, item)"
+                          icon="minus"
+                          @click="handleReduceFromCart(item, item)"
                         >
-                          <view class="iconfont iconsami-select"></view>
-                        </button>
+                        </round-button>
                         <view class="number" v-show="goodCartNum(item.id)">{{
                           goodCartNum(item.id)
                         }}</view>
-                        <button
+                        <round-button
+                          icon="plus"
                           type="primary"
-                          class="btn add_btn"
-                          size="min"
-                          hover-class="none"
-                          @tap="handleAddToCart(item.categrory_id, item, 1)"
+                          :color="$u.color.primary"
+                          @click="handleAddToCart(item.categrory_id, item, 1)"
                         >
-                          <view class="iconfont iconadd-select"></view>
-                        </button>
+                        </round-button>
                       </view>
                     </view>
                   </view>
@@ -127,110 +125,91 @@
       <!-- 购物车栏 begin -->
       <view class="cart-box" v-if="cart.length > 0">
         <view class="mark">
-          <image
-            src="/static/images/menu/cart.png"
-            class="cart-img"
-            @tap="openCartPopup"
-          ></image>
+          <u-icon class="cart-img" size="60" name="shopping-cart"></u-icon>
           <view class="tag">{{ getCartGoodsNumber }}</view>
         </view>
         <view class="price">￥{{ getCartGoodsPrice }}</view>
-        <button
-          type="primary"
-          class="pay-btn"
-          @tap="toPay"
-          :disabled="disabledPay"
-        >
-          {{ disabledPay ? `差${spread}元起送` : '去结算' }}
-        </button>
+        <button type="primary" class="pay-btn" @tap="toPay">去结算</button>
       </view>
       <!-- 购物车栏 end -->
     </view>
     <!-- 商品详情模态框 begin -->
-    <!-- <modal
-      :show="goodDetailModalVisible"
-      class="good-detail-modal"
-      color="#5A5B5C"
-      width="90%"
-      custom
-      padding="0rpx"
-      radius="12rpx"
-    >
-      <view class="cover">
-        <image v-if="good?.image" :src="good.image" class="image"></image>
-        <view class="btn-group">
-          <image src="/static/images/menu/share-good.png"></image>
-          <image
-            src="/static/images/menu/close.png"
-            @tap="closeGoodDetailModal"
-          ></image>
-        </view>
-      </view>
-      <scroll-view class="detail" scroll-y>
-        <view class="wrapper">
-          <view class="basic">
-            <view class="name">{{ good?.name }}</view>
-            <view class="tips">{{ good?.description }}</view>
+    <u-modal :show="goodDetailModalVisible" closeOnClickOverlay>
+      <view class="good-detail-modal">
+        <view class="cover">
+          <view class="btn-group">
+            <u-icon
+              bold
+              size="18"
+              name="close"
+              @click="closeGoodDetailModal"
+            ></u-icon>
           </view>
-          <view class="properties" v-if="good?.use_property">
-            <view
-              class="property"
-              v-for="(item, index) in good.property"
-              :key="index"
-            >
-              <view class="title">
-                <text class="name">{{ item.name }}</text>
-                <view class="desc" v-if="item.desc">({{ item.desc }})</view>
-              </view>
-              <view class="values">
-                <view
-                  class="value"
-                  v-for="(value, key) in item.values"
-                  :key="key"
-                  :class="{ default: value.is_default }"
-                  @tap="changePropertyDefault(index, key)"
-                >
-                  {{ value.value }}
+        </view>
+        <scroll-view class="detail" scroll-y>
+          <view class="wrapper">
+            <view class="basic">
+              <view class="name">{{ good?.name }}</view>
+              <view class="tips">{{ good?.description }}</view>
+            </view>
+            <view class="properties" v-if="good?.flavors">
+              <view
+                class="property"
+                v-for="(item, index) in good.flavors"
+                :key="index"
+              >
+                <view class="title">
+                  <text class="name">{{ item.name }}</text>
+                  <!-- <view class="desc" v-if="item.desc">({{ item.desc }})</view> -->
+                </view>
+                <view class="values">
+                  <view
+                    class="value"
+                    v-for="(value, key) in item.value"
+                    :key="key"
+                    :class="{ default: item.default_value == key }"
+                    @tap="changePropertyDefault(index, key)"
+                  >
+                    {{ value }}
+                  </view>
                 </view>
               </view>
             </view>
           </view>
-        </view>
-      </scroll-view>
-      <view class="action">
-        <view class="left">
-          <view class="price">￥{{ good.price }}</view>
-          <view class="props" v-if="getGoodSelectedProps(good)">
-            {{ getGoodSelectedProps(good) }}
+        </scroll-view>
+        <view class="action">
+          <view class="left">
+            <view class="price">￥{{ good?.price }}</view>
+            <view class="props" v-if="getGoodSelectedProps(good!)">
+              {{ getGoodSelectedProps(good!) }}
+            </view>
+          </view>
+          <view class="btn-group">
+            <roundButton
+              icon="minus"
+              plain
+              type="default"
+              @tap="handlePropertyReduce"
+            >
+            </roundButton>
+            <view class="number">{{ good?.number }}</view>
+            <roundButton icon="plus" type="primary" @tap="handlePropertyAdd">
+            </roundButton>
           </view>
         </view>
-        <view class="btn-group">
-          <button
-            type="default"
-            plain
-            class="btn"
-            size="mini"
-            hover-class="none"
-            @tap="handlePropertyReduce"
-          >
-            <view class="iconfont iconsami-select"></view>
-          </button>
-          <view class="number">{{ good.number }}</view>
-          <button
-            type="primary"
-            class="btn"
-            size="min"
-            hover-class="none"
-            @tap="handlePropertyAdd"
-          >
-            <view class="iconfont iconadd-select"></view>
-          </button>
-        </view>
       </view>
-      <view class="add-to-cart-btn" @tap="handleAddToCartInModal">
-        <view>加入购物车</view>
-      </view>
-    </modal> -->
+
+      <template #confirmButton>
+        <u-button
+          slot="confirm-button"
+          text="加入购物车"
+          type="primary"
+          shape="circle"
+          @click="handleAddToCartInModal"
+        >
+        </u-button>
+      </template>
+    </u-modal>
     <!-- 商品详情模态框 end -->
     <!-- 购物车详情popup -->
     <!-- <popup-layer
@@ -320,12 +299,11 @@
 </template>
 
 <script setup lang="ts">
-import modal from '@/components/modal.vue'
 import popupLayer from '@/components/popup-layer.vue'
+import roundButton from '@/components/round-button.vue'
 import { onLoad } from '@dcloudio/uni-app'
 import axios from 'axios'
-import { url } from 'inspector'
-import { computed, nextTick, reactive, ref } from 'vue'
+import { computed, nextTick, ref } from 'vue'
 
 // import { mapState, mapMutations, mapActions, mapGetters } from 'vuex'
 
@@ -334,31 +312,6 @@ onLoad(async (query: any) => {
 })
 
 //类型
-
-// interface
-
-const ads = reactive([
-  {
-    image:
-      'https://img-shop.qmimg.cn/s23107/2020/04/27/4ebdb582a5185358c4.jpg?imageView2/2/w/600/h/600'
-  },
-  {
-    image:
-      'https://images.qmai.cn/s23107/2020/05/08/c25de6ef72d2890630.png?imageView2/2/w/600/h/600'
-  },
-  {
-    image:
-      'https://img-shop.qmimg.cn/s23107/2020/04/10/add546c1b1561f880d.jpg?imageView2/2/w/600/h/600'
-  },
-  {
-    image:
-      'https://images.qmai.cn/s23107/2020/04/30/b3af19e0de8ed42f61.jpg?imageView2/2/w/600/h/600'
-  },
-  {
-    image:
-      'https://img-shop.qmimg.cn/s23107/2020/04/17/8aeb78516d63864420.jpg?imageView2/2/w/600/h/600'
-  }
-]) // 广告列表
 const categories = ref<Array<Category>>([]) // 分类列表
 const goods = ref<Array<Dish>>([]) // 所有商品
 const loading = ref(true)
@@ -368,7 +321,6 @@ const menuScrollIntoView = ref('')
 const cart = ref<Array<Cart>>([]) // 购物车
 const goodDetailModalVisible = ref(false) // 是否商品详情模态框
 const good = ref<Dish>() // 当前商品
-const category = ref({}) // 当前商品所在分类
 const cartPopupVisible = ref(false)
 const sizeCalcState = ref(false)
 const address = ref({}) //收货地址
@@ -404,18 +356,6 @@ const getCartGoodsPrice = computed(() => {
   //计算购物车总价
   return cart.value.reduce((acc, cur) => acc + cur.number * cur.price, 0)
 })
-const disabledPay = computed(() => {
-  //是否达到起送价
-  return orderType.value == 'takeout' &&
-    getCartGoodsPrice.value < store.min_price
-    ? true
-    : false
-})
-const spread = computed(() => {
-  //差多少元起送
-  if (orderType.value != 'takeout') return
-  return parseFloat((store.min_price - getCartGoodsPrice.value).toFixed(2))
-})
 
 //方法
 
@@ -431,8 +371,8 @@ const init = async () => {
   })
   await axios.get('/api/goods').then((res) => {
     console.log(res)
-    // goods.value = res.data.data
-    goods.value.push(res.data.data)
+    goods.value = res.data.data
+    console.log(goods)
   })
   loading.value = false
   cart.value = uni.getStorageSync('cart') || []
@@ -484,6 +424,7 @@ const calcSize = async () => {
 }
 
 const handleAddToCart = (cate_id: number, good: Dish, num: number) => {
+  // console.log(good)
   // 添加到购物车
   const index = cart.value.findIndex((item) => {
     if (good.use_property) {
@@ -501,7 +442,7 @@ const handleAddToCart = (cate_id: number, good: Dish, num: number) => {
       name: good.name,
       price: good.price,
       number: num,
-      image: good.images,
+      image: good.image,
       use_property: good.use_property,
       props_text: good.props_text,
       props: good.props
@@ -519,59 +460,57 @@ const handleReduceFromCart = (item, good) => {
   uni.setStorageSync('cart', cart.value)
 }
 
-const showGoodDetailModal = (item, good) => {
-  good.value = JSON.parse(JSON.stringify({ ...good.value, number: 1 }))
-  category.value = JSON.parse(JSON.stringify(item))
+const showGoodDetailModal = (item: Dish) => {
+  good.value = item
   goodDetailModalVisible.value = true
 }
 
 const closeGoodDetailModal = () => {
   //关闭饮品详情模态框
   goodDetailModalVisible.value = false
-  category.value = {}
-  good.value = {}
+  good.value = undefined
 }
 
-const changePropertyDefault = (index, key) => {
+const changePropertyDefault = (index: number, key: number) => {
+  console.log(index, key)
   //改变默认属性值
-  good.value.property[index].values.forEach((value) =>
-    this.$set(value, 'is_default', 0)
-  )
-  good.value.property[index].values[key].is_default = 1
-  good.value.number = 1
+  if (good.value && good.value.flavors) {
+    good.value.flavors[index].default_value = key
+  }
 }
 
-const getGoodSelectedProps = (good: Dish, type = 'text') => {
+const getGoodSelectedProps = (good: Dish) => {
   //计算当前商品所选属性
+  if (!good) return
   if (good.use_property) {
-    let props = []
-    good.flavors!.value.forEach(({ values }) => {
-      values.forEach((value) => {
-        if (value.is_default) {
-          props.push(type === 'text' ? value.value : value.id)
+    let flavors: any[] = []
+    good.flavors!.forEach(({ default_value, value }) => {
+      value.forEach((v, index) => {
+        if (index == default_value) {
+          flavors.push(v)
         }
       })
     })
-    return type === 'text' ? props.join(',') : props
+    return flavors.join(',')
   }
   return ''
 }
 
 const handlePropertyAdd = () => {
-  good.value.number += 1
+  good.value!.number += 1
 }
 
 const handlePropertyReduce = () => {
-  if (good.value.number === 1) return
-  good.value.number -= 1
+  if (good.value!.number === 1) return
+  good.value!.number -= 1
 }
 
 const handleAddToCartInModal = () => {
   const product = Object.assign({}, good.value, {
-    props_text: getGoodSelectedProps(good.value),
+    props_text: getGoodSelectedProps(good.value!),
     props: getGoodSelectedProps(good.value, 'id')
   })
-  handleAddToCart(category.value, product, good.value.number)
+  handleAddToCart(category.value, product, good.value!.number)
   closeGoodDetailModal()
 }
 

@@ -1,3 +1,10 @@
+interface Flavors {
+  id: number
+  name: string
+  value: []
+  default_value: number
+}
+
 declare interface Dish {
   id: number
   name: string
@@ -8,9 +15,6 @@ declare interface Dish {
   description: string
   status: number
   use_property: boolean
-  flavors?: {
-    id: number
-    name: string
-    value: []
-  }
+  number: number
+  flavors?: Array<Flavors>
 }
