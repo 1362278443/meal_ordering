@@ -182,13 +182,13 @@ page {
                     background-color: #ffffff;
                     border: 1px solid $color-primary;
                     color: $color-primary;
-                    font-size: $font-size-sm;
-                    width: 36rpx;
-                    height: 36rpx;
-                    line-height: 36rpx;
+                    font-size: 5rpx;
+                    width: 30rpx;
+                    height: 30rpx;
+                    line-height: 30rpx;
                     text-align: center;
                     border-radius: 100%;
-                    right: -12rpx;
+                    right: 7rpx;
                     top: -10rpx;
                   }
 
@@ -248,7 +248,7 @@ page {
   .detail {
     width: 100%;
     min-height: 1vh;
-    max-height: calc(90vh - 320rpx - 80rpx - 120rpx);
+    max-height: calc(90vh - 320rpx - 120rpx);
 
     .wrapper {
       width: 100%;
@@ -455,6 +455,7 @@ page {
     padding: 10rpx 30rpx;
     font-size: 24rpx;
     text-align: right;
+    border-radius: 12rpx 12rpx 0 0;
   }
   .cart-list {
     background-color: #ffffff;
@@ -517,15 +518,6 @@ page {
           display: flex;
           align-items: center;
           justify-content: space-between;
-
-          .btn {
-            width: 46rpx;
-            height: 46rpx;
-            border-radius: 100%;
-            padding: 0;
-            text-align: center;
-            line-height: 46rpx;
-          }
 
           .number {
             font-size: $font-size-base;

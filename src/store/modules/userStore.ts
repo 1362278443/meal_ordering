@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 
 interface userStore {
-  id?: string | number
+  id?: number
 }
 
 const useUserStore = defineStore({
