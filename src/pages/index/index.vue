@@ -69,16 +69,13 @@
             <view class="list">
               <view class="items">
                 <view class="good" v-for="(item, key) in goods" :key="key">
-                  <image
-                    :src="item.image"
-                    class="image"
-                    @tap="showGoodDetailModal(item, item)"
-                  ></image>
+                  <image :src="item.image" class="image"></image>
                   <view class="right">
                     <text class="name">{{ item.name }}</text>
                     <text class="tips">{{ item.description }}</text>
                     <view class="price_and_action">
                       <text class="price">￥{{ item.price }}</text>
+
                       <view class="btn-group" v-if="item.use_property">
                         <u-button
                           class="mr-3"
@@ -90,7 +87,6 @@
                         >
                           选规格
                         </u-button>
-
                         <view class="dot" v-show="goodCartNum(item.id)">{{
                           goodCartNum(item.id)
                         }}</view>
@@ -125,7 +121,12 @@
       <!-- 购物车栏 begin -->
       <view class="cart-box" v-if="cart.length > 0">
         <view class="mark">
-          <u-icon class="cart-img" size="60" name="shopping-cart"></u-icon>
+          <u-icon
+            @click="openCartPopup"
+            class="cart-img"
+            size="60"
+            name="shopping-cart"
+          ></u-icon>
           <view class="tag">{{ getCartGoodsNumber }}</view>
         </view>
         <view class="price">￥{{ getCartGoodsPrice }}</view>
@@ -134,7 +135,11 @@
       <!-- 购物车栏 end -->
     </view>
     <!-- 商品详情模态框 begin -->
-    <u-modal :show="goodDetailModalVisible" closeOnClickOverlay>
+    <u-modal
+      :show="goodDetailModalVisible"
+      closeOnClickOverlay
+      @close="closeGoodDetailModal"
+    >
       <view class="good-detail-modal">
         <view class="cover">
           <view class="btn-group">
@@ -189,11 +194,11 @@
               icon="minus"
               plain
               type="default"
-              @tap="handlePropertyReduce"
+              @click="handlePropertyReduce"
             >
             </roundButton>
             <view class="number">{{ good?.number }}</view>
-            <roundButton icon="plus" type="primary" @tap="handlePropertyAdd">
+            <roundButton icon="plus" type="primary" @click="handlePropertyAdd">
             </roundButton>
           </view>
         </view>
@@ -212,83 +217,66 @@
     </u-modal>
     <!-- 商品详情模态框 end -->
     <!-- 购物车详情popup -->
-    <!-- <popup-layer
-      direction="top"
-      :show-pop="cartPopupVisible"
+    <u-popup
+      mode="bottom"
+      :show="cartPopupVisible"
+      close-on-click-overlay
       class="cart-popup"
+      round="50"
+      @close="closeCartPopup"
     >
-      <template slot="content">
-        <view class="top">
-          <text @tap="handleCartClear">清空</text>
-        </view>
-        <scroll-view class="cart-list" scroll-y>
-          <view class="wrapper">
-            <view class="item" v-for="(item, index) in cart" :key="index">
-              <view class="left">
-                <view class="name">{{ item.name }}</view>
-                <view class="props">{{ item.props_text }}</view>
-              </view>
-              <view class="center">
-                <text>￥{{ item.price }}</text>
-              </view>
-              <view class="right">
-                <button
-                  type="default"
-                  plain
-                  size="mini"
-                  class="btn"
-                  hover-class="none"
-                  @tap="handleCartItemReduce(index)"
-                >
-                  <view class="iconfont iconsami-select"></view>
-                </button>
-                <view class="number">{{ item.number }}</view>
-                <button
-                  type="primary"
-                  class="btn"
-                  size="min"
-                  hover-class="none"
-                  @tap="handleCartItemAdd(index)"
-                >
-                  <view class="iconfont iconadd-select"></view>
-                </button>
-              </view>
+      <view class="top">
+        <text @tap="handleCartClear">清空</text>
+      </view>
+      <scroll-view class="cart-list" scroll-y>
+        <view class="wrapper">
+          <view class="item" v-for="(item, index) in cart" :key="index">
+            <view class="left">
+              <view class="name">{{ item.name }}</view>
+              <view class="props">{{ item.dish_flavor.join(',') }}</view>
             </view>
-            <view
-              class="item"
-              v-if="orderType == 'takeout' && store.packing_fee"
-            >
-              <view class="left">
-                <view class="name">包装费</view>
-              </view>
-              <view class="center">
-                <text>￥{{ parseFloat(store.packing_fee) }}</text>
-              </view>
-              <view class="right invisible">
-                <button
-                  type="default"
-                  plain
-                  size="mini"
-                  class="btn"
-                  hover-class="none"
-                >
-                  <view class="iconfont iconsami-select"></view>
-                </button>
-                <view class="number">1</view>
-                <button
-                  type="primary"
-                  class="btn"
-                  size="min"
-                  hover-class="none"
-                >
-                  <view class="iconfont iconadd-select"></view>
-                </button>
-              </view>
+            <view class="center">
+              <text>￥{{ item.amount * item.number }}</text>
+            </view>
+            <view class="right">
+              <roundButton icon="minus" @click="handleCartItemReduce(index)">
+              </roundButton>
+              <view class="number">{{ item.number }}</view>
+              <roundButton
+                icon="plus"
+                type="primary"
+                @click="handleCartItemAdd(index)"
+              >
+              </roundButton>
             </view>
           </view>
-        </scroll-view>
-      </template>
-    </popup-layer> -->
+          <!-- 额外费用 -->
+          <!-- <view class="item">
+            <view class="left">
+              <view class="name">包装费</view>
+            </view>
+            <view class="center">
+              <text>￥{{ parseFloat(store.packing_fee) }}</text>
+            </view>
+            <view class="right invisible">
+              <button
+                type="default"
+                plain
+                size="mini"
+                class="btn"
+                hover-class="none"
+              >
+                <view class="iconfont iconsami-select"></view>
+              </button>
+              <view class="number">1</view>
+              <button type="primary" class="btn" size="min" hover-class="none">
+                <view class="iconfont iconadd-select"></view>
+              </button>
+            </view>
+          </view> -->
+        </view>
+      </scroll-view>
+    </u-popup>
     <!-- 购物车详情popup -->
     <u-loading-page
       loading-text="loading"
@@ -299,8 +287,8 @@
 </template>
 
 <script setup lang="ts">
-import popupLayer from '@/components/popup-layer.vue'
 import roundButton from '@/components/round-button.vue'
+import useUserStore from '@/store/modules/userStore'
 import { onLoad } from '@dcloudio/uni-app'
 import axios from 'axios'
 import { computed, nextTick, ref } from 'vue'
@@ -328,9 +316,10 @@ const store = ref({}) //店铺信息
 
 //计算属性
 const goodCartNum = computed(() => {
+  //获取商品在购物车数量
   return (id: number) => {
     return cart.value.reduce((acc, cur) => {
-      if (cur.id === id) {
+      if (cur.dish_id === id) {
         return (acc += cur.number)
       }
       return acc
@@ -354,7 +343,7 @@ const getCartGoodsNumber = computed(() => {
 
 const getCartGoodsPrice = computed(() => {
   //计算购物车总价
-  return cart.value.reduce((acc, cur) => acc + cur.number * cur.price, 0)
+  return cart.value.reduce((acc, cur) => acc + cur.number * cur.amount, 0)
 })
 
 //方法
@@ -425,30 +414,44 @@ const calcSize = async () => {
 
 const handleAddToCart = (cate_id: number, good: Dish, num: number) => {
   // console.log(good)
+  //取出商品的属性
+  let flavors: any[] = []
+  good.flavors!.forEach(({ default_value, value }) => {
+    value.forEach((v, index) => {
+      if (index == default_value) {
+        flavors.push(v)
+      }
+    })
+  })
   // 添加到购物车
   const index = cart.value.findIndex((item) => {
     if (good.use_property) {
-      return item.id === good.id && item.props_text === good.props_text
+      //判断是否有重复商品
+      return (
+        item.id === good.id && item.dish_flavor.join(',') === flavors.join(',')
+      )
     } else {
       return item.id === good.id
     }
   })
+
+  //发送请求后再添加到购物车
   if (index > -1) {
     cart.value[index].number += num
   } else {
     cart.value.push({
-      id: good.id,
+      id: 0,
       cate_id: cate_id,
       name: good.name,
-      price: good.price,
-      number: num,
       image: good.image,
-      use_property: good.use_property,
-      props_text: good.props_text,
-      props: good.props
+      user_id: useUserStore().id!,
+      dish_id: good.id,
+      setmeal_id: 0,
+      dish_flavor: flavors,
+      number: num,
+      amount: good.price
     })
   }
-  uni.setStorageSync('cart', cart.value)
 }
 
 const handleReduceFromCart = (item, good) => {
@@ -466,9 +469,9 @@ const showGoodDetailModal = (item: Dish) => {
 }
 
 const closeGoodDetailModal = () => {
-  //关闭饮品详情模态框
-  goodDetailModalVisible.value = false
+  //关闭商品详情模态框
   good.value = undefined
+  goodDetailModalVisible.value = false
 }
 
 const changePropertyDefault = (index: number, key: number) => {
@@ -506,21 +509,23 @@ const handlePropertyReduce = () => {
 }
 
 const handleAddToCartInModal = () => {
-  const product = Object.assign({}, good.value, {
-    props_text: getGoodSelectedProps(good.value!),
-    props: getGoodSelectedProps(good.value, 'id')
-  })
-  handleAddToCart(category.value, product, good.value!.number)
+  handleAddToCart(currentCateId.value, good.value!, good.value!.number)
   closeGoodDetailModal()
 }
 
 const openCartPopup = () => {
-  // 打开/关闭购物车列表popup
-  cartPopupVisible.value = !cartPopupVisible.value
+  // 打开购物车列表popup
+  cartPopupVisible.value = true
+}
+
+const closeCartPopup = () => {
+  // 关闭购物车列表popup
+  cartPopupVisible.value = false
 }
 
 const handleCartClear = () => {
   // 清空购物车
+  closeCartPopup()
   uni.showModal({
     title: '提示',
     content: '确定清空购物车么',
@@ -529,6 +534,9 @@ const handleCartClear = () => {
         cartPopupVisible.value = false
         cart.value = []
       }
+    },
+    fail: () => {
+      openCartPopup()
     }
   })
 }
@@ -555,11 +563,11 @@ const toPay = () => {
   // }
 
   uni.showLoading({ title: '加载中' })
-  uni.setStorageSync('cart', JSON.parse(JSON.stringify(cart.value)))
+  // uni.setStorageSync('cart', JSON.parse(JSON.stringify(cart.value)))
 
-  uni.navigateTo({
-    url: '/pages/pay/pay'
-  })
+  // uni.navigateTo({
+  //   url: '/pages/pay/pay'
+  // })
   uni.hideLoading()
 }
 </script>
