@@ -1,15 +1,15 @@
 import http from '../http'
 
 function login(params: LoginParams) {
-  return http.post<LoginModel>('user/login', params)
+  return http.post('user/login', params)
 }
 
 /**
  * 获取验证码
  * @param phone 手机号
  */
-function getCode(phone: string): Promise<{ num: number }> {
-  return http.get('random/code', {
+function getCode(phone: string): Promise<{ data: string }> {
+  return http.get('user/sendMsgTest', {
     params: {
       phone
     }

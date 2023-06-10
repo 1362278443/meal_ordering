@@ -22,6 +22,8 @@ export default defineConfig({
     ROUTES: new TransformPages().routes // 注入路由表
   },
   server: {
+    cors: true, // 默认启用并允许任何源
+    open: true, // 在服务器启动时自动在浏览器中打开应用程序
     // port: 8080,
     host: '0.0.0.0',
     proxy: {
@@ -32,7 +34,7 @@ export default defineConfig({
         rewrite: (p) => p.replace(/^\/api/, '')
       },
       '/api-prod/': {
-        target: 'http://localhost:3001',
+        target: 'http://localhost:8080',
         changeOrigin: true,
         rewrite: (p) => p.replace(/^\/api-prod/, '')
       }

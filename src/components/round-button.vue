@@ -6,8 +6,8 @@
 <script setup lang="ts"></script>
 <style lang="scss">
 .custom-style {
-  width: 40rpx;
-  height: 40rpx;
+  width: 50rpx;
+  height: 50rpx;
   margin: 0rpx 16rpx;
   border-radius: 50%;
 }

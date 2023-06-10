@@ -82,7 +82,7 @@
                           shape="circle"
                           type="primary"
                           :color="$u.color.primary"
-                          @click="showGoodDetailModal(item, item)"
+                          @click="showGoodDetailModal(item)"
                           size="small"
                         >
                           选规格
@@ -95,7 +95,7 @@
                         <round-button
                           v-show="goodCartNum(item.id)"
                           icon="minus"
-                          @click="handleReduceFromCart(item, item)"
+                          @click="handleReduceFromCart(item)"
                         >
                         </round-button>
                         <view class="number" v-show="goodCartNum(item.id)">{{
@@ -454,7 +454,7 @@ const handleAddToCart = (cate_id: number, good: Dish, num: number) => {
   }
 }
 
-const handleReduceFromCart = (item, good) => {
+const handleReduceFromCart = (good) => {
   const index = cart.value.findIndex((cartItem) => cartItem.id === good.id)
   cart.value[index].number -= 1
   if (cart.value[index].number <= 0) {
@@ -557,18 +557,20 @@ const handleCartItemReduce = (index) => {
 }
 
 const toPay = () => {
-  // if (!isLogin.value) {
-  //   uni.navigateTo({ url: '/pages/login/login' })
-  //   return
-  // }
-
-  uni.showLoading({ title: '加载中' })
-  // uni.setStorageSync('cart', JSON.parse(JSON.stringify(cart.value)))
-
-  // uni.navigateTo({
-  //   url: '/pages/pay/pay'
-  // })
-  uni.hideLoading()
+  closeCartPopup()
+  uni.showModal({
+    title: '假装付款',
+    content: '确定v我' + getCartGoodsPrice.value + '元',
+    success: ({ confirm }) => {
+      if (confirm) {
+        cartPopupVisible.value = false
+        cart.value = []
+      }
+    },
+    fail: () => {
+      openCartPopup()
+    }
+  })
 }
 </script>
 

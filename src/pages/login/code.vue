@@ -21,10 +21,10 @@
 </template>
 
 <script setup lang="ts">
-import { useAuthStore } from '@/store'
+import { useUserStore, useAuthStore } from '@/store'
 import { Toast } from '@/utils/uniapi/prompt'
 import { userApi } from '@/api'
-import { computed, ref } from 'vue'
+import { ref } from 'vue'
 import { onLoad } from '@dcloudio/uni-app'
 import { useRouter } from 'uni-mini-router'
 
@@ -32,13 +32,19 @@ const pageQuery = ref<Record<string, any>>({})
 
 onLoad((query: any) => {
   pageQuery.value = query
+
+  //向后端请求验证码
+  userApi.getCode(pageQuery.value['tel']).then((res) => {
+    Toast(res.data, { duration: 1500 })
+  })
 })
 
 const router = useRouter()
 
 const authStore = useAuthStore()
+const userStore = useUserStore()
 
-const maxlength = ref(4)
+const maxlength = ref(6)
 const value = ref('')
 const second = ref(3)
 const show = ref(false)
@@ -53,7 +59,11 @@ let interval = setInterval(() => {
 }, 1000)
 
 // 重新发送验证码
-const noCaptcha = () => {}
+const noCaptcha = () => {
+  userApi.getCode(pageQuery.value['tel']).then((res) => {
+    Toast(res.data, { duration: 1500 })
+  })
+}
 // change事件侦听
 const change = (value: string) => {
   // console.log('change', value);
@@ -62,6 +72,23 @@ const change = (value: string) => {
 const finish = (value: string) => {
   // 完成发送请求验证
   console.log('finish', value)
+  userApi
+    .login({
+      phone: pageQuery.value['tel'],
+      code: value
+    })
+    .then((res) => {
+      console.log(res)
+      if (res.code === 1) {
+        Toast('登录成功', { duration: 1500 })
+        authStore.setToken(res.data.id)
+        userStore.setUserInfo(res.data)
+        router.push({ name: 'Home' })
+      } else {
+        value = ''
+        error.value = true
+      }
+    })
 }
 </script>
 
