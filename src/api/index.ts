@@ -1,1 +1,5 @@
 export { default as userApi } from './modules/user'
+export { default as dishApi } from './modules/dish'
+export { default as categoryApi } from './modules/category'
+export { default as cartApi } from './modules/cart'
+export { default as setmealApi } from './modules/setmeal'

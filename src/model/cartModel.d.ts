@@ -1,12 +1,12 @@
 declare interface Cart {
-  id: number
-  cate_id: number
+  id: number | undefined
+  cateId: number
   name: string
   image: string
-  user_id: number
-  dish_id: number
-  setmeal_id: number
-  dish_flavor: Array<string>
+  userId: number
+  dishId: number
+  setmealId: number
+  dishFlavor: string
   number: number
   amount: number
 }

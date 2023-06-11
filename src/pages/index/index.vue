@@ -44,7 +44,7 @@
             :class="{ current: item.id === currentCateId }"
             v-for="(item, index) in categories"
             :key="index"
-            @tap="handleMenuTap(item.id)"
+            @tap="handleMenuTap(item.id, item.type)"
           >
             <text>{{ item.name }}</text>
             <u-badge
@@ -76,7 +76,7 @@
                     <view class="price_and_action">
                       <text class="price">￥{{ item.price }}</text>
 
-                      <view class="btn-group" v-if="item.use_property">
+                      <view class="btn-group" v-if="item.flavors?.length">
                         <u-button
                           class="mr-3"
                           shape="circle"
@@ -105,7 +105,7 @@
                           icon="plus"
                           type="primary"
                           :color="$u.color.primary"
-                          @click="handleAddToCart(item.categrory_id, item, 1)"
+                          @click="handleAddToCart(item.categroryId, item, 1)"
                         >
                         </round-button>
                       </view>
@@ -157,7 +157,7 @@
               <view class="name">{{ good?.name }}</view>
               <view class="tips">{{ good?.description }}</view>
             </view>
-            <view class="properties" v-if="good?.flavors">
+            <view class="properties" v-if="good?.flavors?.length">
               <view
                 class="property"
                 v-for="(item, index) in good.flavors"
@@ -233,7 +233,7 @@
           <view class="item" v-for="(item, index) in cart" :key="index">
             <view class="left">
               <view class="name">{{ item.name }}</view>
-              <view class="props">{{ item.dish_flavor.join(',') }}</view>
+              <view class="props">{{ item.dishFlavor }}</view>
             </view>
             <view class="center">
               <text>￥{{ item.amount * item.number }}</text>
@@ -290,8 +290,9 @@
 import roundButton from '@/components/round-button.vue'
 import useUserStore from '@/store/modules/userStore'
 import { onLoad } from '@dcloudio/uni-app'
-import axios from 'axios'
+import { cartApi, categoryApi, dishApi, setmealApi } from '@/api'
 import { computed, nextTick, ref } from 'vue'
+import { json } from 'stream/consumers'
 
 // import { mapState, mapMutations, mapActions, mapGetters } from 'vuex'
 
@@ -303,14 +304,14 @@ onLoad(async (query: any) => {
 const categories = ref<Array<Category>>([]) // 分类列表
 const goods = ref<Array<Dish>>([]) // 所有商品
 const loading = ref(true)
-const currentCateId = ref(6905) // 默认分类
+const currentCateId = ref(0) // 默认分类
 const cateScrollTop = ref(0)
 const menuScrollIntoView = ref('')
 const cart = ref<Array<Cart>>([]) // 购物车
 const goodDetailModalVisible = ref(false) // 是否商品详情模态框
 const good = ref<Dish>() // 当前商品
 const cartPopupVisible = ref(false)
-const sizeCalcState = ref(false)
+// const sizeCalcState = ref(false)
 const address = ref({}) //收货地址
 const store = ref({}) //店铺信息
 
@@ -319,7 +320,7 @@ const goodCartNum = computed(() => {
   //获取商品在购物车数量
   return (id: number) => {
     return cart.value.reduce((acc, cur) => {
-      if (cur.dish_id === id) {
+      if (cur.dishId === id) {
         return (acc += cur.number)
       }
       return acc
@@ -330,7 +331,7 @@ const goodCartNum = computed(() => {
 const menuCartNum = computed(() => {
   return (id: number) =>
     cart.value.reduce((acc, cur) => {
-      if (cur.cate_id === id) {
+      if (cur.cateId === id) {
         return (acc += cur.number)
       }
       return acc
@@ -351,68 +352,90 @@ const getCartGoodsPrice = computed(() => {
 const init = async () => {
   //页面初始化
   loading.value = true
-  // await getStore()
-  // goods.value = await $api('goods')
-  // categories.value = await $api('categories')
-  await axios.get('/api/cate').then((res) => {
-    console.log(res)
-    categories.value = res.data.data
+  //获取类别
+  await categoryApi.getCategoryList().then((res) => {
+    categories.value = res.data
+    changeCurrentCateId(categories.value[0].id, categories.value[0].type)
   })
-  await axios.get('/api/goods').then((res) => {
-    console.log(res)
-    goods.value = res.data.data
-    console.log(goods)
+  //获取购物车数据
+  await cartApi.getCartList().then((res) => {
+    cart.value = res.data
   })
+
   loading.value = false
-  cart.value = uni.getStorageSync('cart') || []
-  // console.log('aaaa')
 }
 
-const handleMenuTap = (id) => {
-  // 点击菜单项事件
-  if (!sizeCalcState.value) {
-    calcSize()
+const changeCurrentCateId = async (id: number, type: number) => {
+  //切换分类
+  currentCateId.value = id
+  //获取菜品数据
+  if (type === 1) {
+    await dishApi.getDishList(id).then((res) => {
+      // console.log(res)
+      goods.value = res.data
+    })
+  } else {
+    await setmealApi.getSetmealList(id).then((res) => {
+      // console.log(res)
+      goods.value = res.data
+    })
   }
 
-  currentCateId.value = id
+  //将value转成数组
+  goods.value.forEach((item) => {
+    item.flavors?.forEach((flavor) => {
+      flavor.value = JSON.parse(<string>(<unknown>flavor.value))
+    })
+  })
+  console.log(goods.value)
+}
+
+const handleMenuTap = (id: number, type: number) => {
+  // 点击菜单项事件
+  // if (!sizeCalcState.value) {
+  //   calcSize()
+  // }
+
+  changeCurrentCateId(id, type)
   nextTick(() => {
-    cateScrollTop.value = goods.value.find((item) => item.id == id).top
+    cateScrollTop.value = 0
   })
 }
-const handleGoodsScroll = ({ detail }) => {
+const handleGoodsScroll = ({ detail: any }) => {
   // 商品列表滚动事件
-  if (!sizeCalcState.value) {
-    calcSize()
-  }
-  const { scrollTop } = detail
-  let tabs = goods.value.filter((item) => item.top <= scrollTop).reverse()
-  if (tabs.length > 0) {
-    currentCateId.value = tabs[0].id
-  }
+  // if (!sizeCalcState.value) {
+  //   calcSize()
+  // }
+  // const { scrollTop } = detail
+  // let tabs = goods.value.filter((item) => 0 <= scrollTop).reverse()
+  // if (tabs.length > 0) {
+  //   currentCateId.value = tabs[0].id
+  // }
 }
-const calcSize = async () => {
-  // 计算尺寸
-  sizeCalcState.value = true
-  let h = 10
+// const calcSize = async () => {
+//   // 计算尺寸
+//   sizeCalcState.value = true
+//   let h = 10
 
-  const adsView = await nextTick(() => uni.createSelectorQuery().select('#ads'))
-  const adsData = await nextTick(() => adsView.fields({ size: true }))
-  h += Math.floor(adsData.height)
+//   const adsView = await nextTick(() => uni.createSelectorQuery().select('#ads'))
+//   const adsData = await nextTick(() => adsView.fields({ size: true }))
+//   h += Math.floor(adsData.height)
 
-  for (const item of goods.value) {
-    const cateView = await nextTick(() =>
-      uni.createSelectorQuery().select(`#cate-${item.id}`)
-    )
-    const cateData = await nextTick(() => cateView.fields({ size: true }))
-    item.top = h
-    h += cateData.height
-    item.bottom = h
-  }
+//   for (const item of goods.value) {
+//     const cateView = await nextTick(() =>
+//       uni.createSelectorQuery().select(`#cate-${item.id}`)
+//     )
+//     const cateData = await nextTick(() => cateView.fields({ size: true }))
+//     item.top = h
+//     h += cateData.height
+//     item.bottom = h
+//   }
 
-  sizeCalcState.value = false
-}
+//   sizeCalcState.value = false
+// }
 
-const handleAddToCart = (cate_id: number, good: Dish, num: number) => {
+const handleAddToCart = async (cate_id: number, good: Dish, num: number) => {
+  //添加到购物车
   // console.log(good)
   //取出商品的属性
   let flavors: any[] = []
@@ -423,38 +446,44 @@ const handleAddToCart = (cate_id: number, good: Dish, num: number) => {
       }
     })
   })
-  // 添加到购物车
+
+  const cartItem: Cart = {
+    id: undefined,
+    cateId: cate_id,
+    name: good.name,
+    image: good.image,
+    userId: useUserStore().id!,
+    dishId: good.id,
+    setmealId: 0,
+    dishFlavor: flavors.join(','),
+    number: num,
+    amount: good.price
+  }
+
+  // 查找重复的商品索引
+  console.log('查找')
   const index = cart.value.findIndex((item) => {
-    if (good.use_property) {
+    if (good.flavors?.length) {
       //判断是否有重复商品
-      return (
-        item.id === good.id && item.dish_flavor.join(',') === flavors.join(',')
-      )
+      return item.dishId === good.id && item.dishFlavor === flavors.join(',')
     } else {
-      return item.id === good.id
+      return item.dishId === good.id
     }
   })
 
-  //发送请求后再添加到购物车
-  if (index > -1) {
-    cart.value[index].number += num
-  } else {
-    cart.value.push({
-      id: 0,
-      cate_id: cate_id,
-      name: good.name,
-      image: good.image,
-      user_id: useUserStore().id!,
-      dish_id: good.id,
-      setmeal_id: 0,
-      dish_flavor: flavors,
-      number: num,
-      amount: good.price
-    })
-  }
+  //向后端请求添加
+  await cartApi.addCart(cartItem).then((res) => {
+    //发送请求后再添加到购物车
+    console.log(index, num)
+    if (index > -1) {
+      cart.value[index].number += num
+    } else {
+      cart.value.push(res.data)
+    }
+  })
 }
 
-const handleReduceFromCart = (good) => {
+const handleReduceFromCart = (good: Dish) => {
   const index = cart.value.findIndex((cartItem) => cartItem.id === good.id)
   cart.value[index].number -= 1
   if (cart.value[index].number <= 0) {
@@ -464,7 +493,10 @@ const handleReduceFromCart = (good) => {
 }
 
 const showGoodDetailModal = (item: Dish) => {
-  good.value = item
+  good.value = { ...item, number: 1 }
+  good.value.flavors?.forEach((flavor) => {
+    flavor.default_value = 0
+  })
   goodDetailModalVisible.value = true
 }
 
@@ -485,9 +517,10 @@ const changePropertyDefault = (index: number, key: number) => {
 const getGoodSelectedProps = (good: Dish) => {
   //计算当前商品所选属性
   if (!good) return
-  if (good.use_property) {
+  if (good.flavors) {
     let flavors: any[] = []
     good.flavors!.forEach(({ default_value, value }) => {
+      console.log(good)
       value.forEach((v, index) => {
         if (index == default_value) {
           flavors.push(v)
@@ -504,7 +537,7 @@ const handlePropertyAdd = () => {
 }
 
 const handlePropertyReduce = () => {
-  if (good.value!.number === 1) return
+  if (good.value?.number === 1) return
   good.value!.number -= 1
 }
 
@@ -531,8 +564,10 @@ const handleCartClear = () => {
     content: '确定清空购物车么',
     success: ({ confirm }) => {
       if (confirm) {
-        cartPopupVisible.value = false
-        cart.value = []
+        cartApi.clearCart().then(() => {
+          cartPopupVisible.value = false
+          cart.value = []
+        })
       }
     },
     fail: () => {
@@ -541,11 +576,13 @@ const handleCartClear = () => {
   })
 }
 
-const handleCartItemAdd = (index) => {
+//添加到购物车
+const handleCartItemAdd = (index: number) => {
   cart.value[index].number += 1
 }
 
-const handleCartItemReduce = (index) => {
+//从购物车减少
+const handleCartItemReduce = (index: number) => {
   if (cart.value[index].number === 1) {
     cart.value.splice(index, 1)
   } else {

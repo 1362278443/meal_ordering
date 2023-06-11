@@ -8,13 +8,12 @@ interface Flavors {
 declare interface Dish {
   id: number
   name: string
-  categrory_id: number
+  categroryId: number
   price: number
   code: string
   image: string
   description: string
   status: number
-  use_property: boolean
-  number: number
+  number: number //商品数量
   flavors?: Array<Flavors>
 }
