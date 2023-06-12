@@ -18,6 +18,18 @@
       "meta": {
         "ignoreAuth": true
       }
+    },
+    {
+      "name": "address",
+      "path": "pages/address/index"
+    },
+    {
+      "name": "addressAdd",
+      "path": "pages/address/add"
+    },
+    {
+      "name": "pay",
+      "path": "pages/pay/index"
     }
   ],
   "globalStyle": {

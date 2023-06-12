@@ -10,8 +10,7 @@
               <view
                 class="text-size-lg text-color-base font-weight-bold text-truncate"
               >
-                <!-- {{ address.street }} -->
-                理塘大街
+                {{ address?.detail }}
               </view>
             </view>
             <view
@@ -135,12 +134,12 @@
       <!-- 购物车栏 end -->
     </view>
     <!-- 商品详情模态框 begin -->
-    <u-modal
+    <u-popup
       :show="goodDetailModalVisible"
       closeOnClickOverlay
       @close="closeGoodDetailModal"
     >
-      <view class="good-detail-modal">
+      <view @touchmove.stop.prevent class="good-detail-modal">
         <view class="cover">
           <view class="btn-group">
             <u-icon
@@ -204,17 +203,16 @@
         </view>
       </view>
 
-      <template #confirmButton>
-        <u-button
-          slot="confirm-button"
-          text="加入购物车"
-          type="primary"
-          shape="circle"
-          @click="handleAddToCartInModal"
-        >
-        </u-button>
-      </template>
-    </u-modal>
+      <!-- <template #confirmButton> -->
+      <u-button
+        slot="confirm-button"
+        text="加入购物车"
+        type="primary"
+        @click="handleAddToCartInModal"
+      >
+      </u-button>
+      <!-- </template> -->
+    </u-popup>
     <!-- 商品详情模态框 end -->
     <!-- 购物车详情popup -->
     <u-popup
@@ -288,11 +286,11 @@
 
 <script setup lang="ts">
 import roundButton from '@/components/round-button.vue'
-import useUserStore from '@/store/modules/userStore'
 import { onLoad } from '@dcloudio/uni-app'
-import { cartApi, categoryApi, dishApi, setmealApi } from '@/api'
+import { addressApi, cartApi, categoryApi, dishApi, setmealApi } from '@/api'
 import { computed, nextTick, ref } from 'vue'
-import { json } from 'stream/consumers'
+import router from '@/router'
+import { useAddressStore, useUserStore } from '@/store'
 
 // import { mapState, mapMutations, mapActions, mapGetters } from 'vuex'
 
@@ -312,8 +310,11 @@ const goodDetailModalVisible = ref(false) // 是否商品详情模态框
 const good = ref<Dish>() // 当前商品
 const cartPopupVisible = ref(false)
 // const sizeCalcState = ref(false)
-const address = ref({}) //收货地址
+const address = ref<Address>() //收货地址
 const store = ref({}) //店铺信息
+
+const AddressStore = useAddressStore()
+const userStore = useUserStore()
 
 //计算属性
 const goodCartNum = computed(() => {
@@ -352,6 +353,26 @@ const getCartGoodsPrice = computed(() => {
 const init = async () => {
   //页面初始化
   loading.value = true
+  //获取默认地址
+  //查看是否有地址
+  if (!useAddressStore().isEmpty) {
+    await addressApi.getAddress(useAddressStore().getId!)
+  } else {
+    //没有则获取
+    console.log('获取地址')
+    await addressApi
+      .getDefaultAddress()
+      .then((res) => {
+        console.log('默认地址', res.data.id)
+        AddressStore.setAddress(res.data.id)
+        address.value = res.data
+      })
+      .catch((err) => {
+        //没有默认地址跳转到添加地址页面
+        router.push({ name: 'address' })
+      })
+  }
+
   //获取类别
   await categoryApi.getCategoryList().then((res) => {
     categories.value = res.data
@@ -452,7 +473,7 @@ const handleAddToCart = async (cate_id: number, good: Dish, num: number) => {
     cateId: cate_id,
     name: good.name,
     image: good.image,
-    userId: useUserStore().id!,
+    userId: userStore.id!,
     dishId: good.id,
     setmealId: 0,
     dishFlavor: flavors.join(','),
@@ -474,7 +495,6 @@ const handleAddToCart = async (cate_id: number, good: Dish, num: number) => {
   //向后端请求添加
   await cartApi.addCart(cartItem).then((res) => {
     //发送请求后再添加到购物车
-    console.log(index, num)
     if (index > -1) {
       cart.value[index].number += num
     } else {
@@ -484,12 +504,17 @@ const handleAddToCart = async (cate_id: number, good: Dish, num: number) => {
 }
 
 const handleReduceFromCart = (good: Dish) => {
-  const index = cart.value.findIndex((cartItem) => cartItem.id === good.id)
-  cart.value[index].number -= 1
-  if (cart.value[index].number <= 0) {
-    cart.value.splice(index, 1)
-  }
-  uni.setStorageSync('cart', cart.value)
+  //从购物车减少
+  const index = cart.value.findIndex((cartItem) => cartItem.dishId === good.id)
+
+  cartApi.subCart(cart.value[index]).then((res) => {
+    //发送请求后再减少
+    if (cart.value[index].number > 1) {
+      cart.value[index].number -= 1
+    } else {
+      cart.value.splice(index, 1)
+    }
+  })
 }
 
 const showGoodDetailModal = (item: Dish) => {
@@ -582,12 +607,16 @@ const handleCartItemAdd = (index: number) => {
 }
 
 //从购物车减少
-const handleCartItemReduce = (index: number) => {
-  if (cart.value[index].number === 1) {
-    cart.value.splice(index, 1)
-  } else {
-    cart.value[index].number -= 1
-  }
+const handleCartItemReduce = async (index: number) => {
+  await cartApi.subCart(cart.value[index]).then((res) => {
+    //发送请求后再减少
+    if (cart.value[index].number > 1) {
+      cart.value[index].number -= 1
+    } else {
+      cart.value.splice(index, 1)
+    }
+  })
+
   if (!cart.value.length) {
     cartPopupVisible.value = false
   }
@@ -595,19 +624,20 @@ const handleCartItemReduce = (index: number) => {
 
 const toPay = () => {
   closeCartPopup()
-  uni.showModal({
-    title: '假装付款',
-    content: '确定v我' + getCartGoodsPrice.value + '元',
-    success: ({ confirm }) => {
-      if (confirm) {
-        cartPopupVisible.value = false
-        cart.value = []
-      }
-    },
-    fail: () => {
-      openCartPopup()
-    }
-  })
+  // uni.showModal({
+  //   title: '假装付款',
+  //   content: '确定v我' + getCartGoodsPrice.value + '元',
+  //   success: ({ confirm }) => {
+  //     if (confirm) {
+  //       cartPopupVisible.value = false
+  //       cart.value = []
+  //     }
+  //   },
+  //   fail: () => {
+  //     openCartPopup()
+  //   }
+  // })
+  router.push({ name: 'pay' })
 }
 </script>
 
