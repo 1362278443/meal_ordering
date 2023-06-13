@@ -24,13 +24,13 @@ function getAddress(id: number) {
 
 //修改地址
 function editAddress(address: Address) {
-  return http.put(`addressBook/edit`, address)
+  return http.post(`addressBook/edit`, address)
 }
 
 //删除地址
 function removeAddress(id: number) {
-  return http.delete(`addressBook/remove`, {
-    data: {
+  return http.delete(`addressBook/remove/`, {
+    params: {
       id
     }
   })

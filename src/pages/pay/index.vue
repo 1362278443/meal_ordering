@@ -1,21 +1,18 @@
 <template>
+  <u-navbar title="付款" fixed placeholder auto-back></u-navbar>
   <view class="container position-relative">
     <view style="margin-bottom: 130rpx">
       <view class="section-1">
         <list-cell @click="chooseAddress">
-          <view class="w-100 d-flex flex-column">
-            <view
-              class="d-flex align-items-center justify-content-between mb-10"
-            >
-              <view class="font-size-extra-lg text-color-base">{{
+          <view class="w-100 flex-col">
+            <view class="flex items-center flex-justify-between mb-10">
+              <view class="text-size-lg text-dark-50">{{
                 address?.detail
               }}</view>
-              <image src="/static/images/navigator-1.png" class="arrow"></image>
+              <u-icon name="arrow-left" class="arrow" size="30"></u-icon>
             </view>
-            <view
-              class="d-flex text-color-assist font-size-sm align-items-center"
-            >
-              <view class="mr-10">{{ address?.consignee }}</view>
+            <view class="flex text-gray-500 text-size-sm items-center">
+              <view class="mr-5">{{ address?.consignee }}</view>
               <view class="mr-10">{{ address?.sex ? '先生' : '女士' }}</view>
               <view>{{ address?.phone }}</view>
             </view>
@@ -24,214 +21,187 @@
       </view>
       <!-- 购物车列表 begin -->
       <view class="section-2">
-        <view class="cart d-flex flex-column">
+        <view class="cart flex flex-col">
           <list-cell last v-for="(item, index) in cart" :key="index">
-            <view class="w-100 d-flex flex-column">
-              <view class="d-flex align-items-center mb-10">
+            <view class="w-100 flex flex-col">
+              <view class="flex items-center mb-10">
                 <view class="name-and-props overflow-hidden">
-                  <view class="text-color-base font-size-lg">
+                  <view class="text-dark-200 text-size-lg">
                     {{ item.name }}
                   </view>
                 </view>
                 <view
-                  class="d-flex flex-fill justify-content-between align-items-center text-color-base font-size-lg"
+                  class="flex flex-grow justify-between items-center text-dark-200 text-size-lg"
                 >
                   <view>x{{ item.number }}</view>
                   <view>￥{{ item.amount }}</view>
                 </view>
               </view>
-              <view class="text-truncate font-size-base text-color-assist">
+              <view class="text-truncate text-gray-500">
                 {{ item.dishFlavor }}
               </view>
             </view>
           </list-cell>
         </view>
         <list-cell last>
-          <view class="flex-fill d-flex justify-content-end align-items-center">
+          <view class="flex flex-grow justify-end items-center">
             <view>总计￥{{ total }}</view>
           </view>
         </list-cell>
       </view>
       <!-- 购物车列表 end -->
-      <!-- 支付方式 begin -->
-      <view class="payment">
-        <list-cell last :hover="false">
-          <text>支付方式</text>
-        </list-cell>
-        <list-cell>
-          <view
-            class="d-flex align-items-center justify-content-between w-100 disabled"
-          >
-            <view
-              class="iconfont iconbalance line-height-100 payment-icon"
-            ></view>
-            <view class="flex-fill">余额支付（余额￥0）</view>
-            <view class="font-size-sm">余额不足</view>
-            <view
-              class="iconfont iconradio-button-off line-height-100 checkbox"
-            ></view>
-          </view>
-        </list-cell>
-        <list-cell last>
-          <view class="d-flex align-items-center justify-content-between w-100">
-            <view
-              class="iconfont iconwxpay line-height-100 payment-icon"
-              style="color: #7eb73a"
-            ></view>
-            <view class="flex-fill">微信支付</view>
-            <view
-              class="iconfont iconradio-button-on line-height-100 checkbox checked"
-            ></view>
-          </view>
-        </list-cell>
-      </view>
-      <!-- 支付方式 end -->
       <!-- 备注 begin -->
-      <list-cell arrow last @click="goToRemark">
+      <list-cell arrow last>
         <view
-          class="d-flex flex-fill align-items-center justify-content-between overflow-hidden"
+          class="flex flex-grow items-center justify-between overflow-hidden"
         >
           <view class="flex-shrink-0 mr-20">备注</view>
-          <view class="text-color-primary flex-fill text-truncate text-right">{{
-            form.remark || '点击填写备注'
-          }}</view>
         </view>
       </list-cell>
+      <u-textarea
+        auto-height
+        v-model="form!.remark"
+        placeholder="请输入内容"
+        count
+        fixed
+        class="mx-5"
+      ></u-textarea>
       <!-- 备注 end -->
     </view>
     <!-- 付款栏 begin -->
-    <!-- <view
-      class="w-100 pay-box position-fixed fixed-bottom d-flex align-items-center justify-content-between bg-white"
-    >
-      <view class="font-size-sm" style="margin-left: 20rpx">合计：</view>
-      <view class="font-size-lg flex-fill">￥{{ amount }}</view>
-      <view
-        class="bg-primary h-100 d-flex align-items-center just-content-center text-color-white font-size-base"
-        style="padding: 0 60rpx"
-        @tap="submit"
-      >
-        付款
-      </view>
-    </view> -->
+    <view class="pay_btn" @tap="openPopup">
+      <view class="pay"> 付款 </view>
+    </view>
     <!-- 付款栏 end -->
-    <!-- <modal
-      :show="ensureAddressModalVisible"
-      custom
-      :mask-closable="false"
-      :radius="0"
-      width="90%"
+    <u-popup
+      mode="bottom"
+      :show="popup"
+      close-on-click-overlay
+      @close="closePopup"
     >
-      <view class="modal-content">
-        <view class="d-flex justify-content-end">
-          <image
-            src="/static/images/pay/close.png"
-            style="width: 40rpx; height: 40rpx"
-            @tap="ensureAddressModalVisible = false"
-          ></image>
-        </view>
-        <view
-          class="d-flex just-content-center align-items-center"
-          style="margin-bottom: 40px"
-        >
-          <view class="font-size-extra-lg text-color-base"
-            >请再次确认下单地址</view
-          >
-        </view>
-        <view
-          class="d-flex font-size-base text-color-base font-weight-bold align-items-center justify-content-between mb-20"
-        >
-          <view
-            >{{ address.accept_name }} {{ address.sex ? '女士' : '先生' }}</view
-          >
-          <view>{{ address.mobile }}</view>
-        </view>
-        <view
-          class="d-flex font-size-sm text-color-assist align-items-center justify-content-between mb-40"
-        >
-          <view>{{ address.street + address.door_number }}</view>
-          <button type="primary" size="mini" plain class="change-address-btn">
-            修改地址
-          </button>
-        </view>
-        <button type="primary" class="pay_btn" @tap="pay">确认并付款</button>
-      </view>
-    </modal> -->
+      <list class="m-4">
+        <u-icon name="weixin-fill" size="30" @click="pay(1)"></u-icon>
+        微信支付
+      </list>
+      <list class="m-4">
+        <u-icon name="zhifubao" size="30" @click="pay(2)"> </u-icon>
+        支付宝支付
+      </list>
+    </u-popup>
   </view>
 </template>
 
 <script setup lang="ts">
 // import { mapState, mapMutations } from 'vuex'
 import ListCell from '@/components/list-cell.vue'
-import { addressApi, cartApi } from '@/api'
+import { addressApi, cartApi, orderApi } from '@/api'
 import router from '@/router'
-import { onLoad } from '@dcloudio/uni-app'
+import { onLoad, onShow } from '@dcloudio/uni-app'
 import { ref, computed } from 'vue'
-import { useAddressStore } from '@/store'
+import { useAddressStore, useUserStore } from '@/store'
 
+const userStore = useUserStore()
+const addressStore = useAddressStore()
+
+const radio = ref([
+  {
+    name: '微信支付',
+    disabled: false
+  },
+  {
+    name: '支付宝支付',
+    disabled: false
+  }
+])
+
+const order = ref<Order>()
 const cart = ref<Array<Cart>>([]) // 购物车
 const address = ref<Address>() //收货地址
 const form = { remark: '' }
-const ensureAddressModalVisible = ref(false)
+const popup = ref(false)
 
-onLoad(() => {
-  // const { remark } = option
+onShow(() => {
+  console.log('show')
   //获取购物车数据
   cartApi.getCartList().then((res) => {
     cart.value = res.data
   })
 
   //获取默认地址
-  console.log(useAddressStore().getId)
-  addressApi.getAddress(useAddressStore().getId!).then((res) => {
+  console.log(addressStore.id)
+  addressApi.getAddress(addressStore.id!).then((res) => {
     address.value = res.data
   })
-
-  // remark && $set(form, 'remark', remark)
 })
 
 const total = computed(() =>
-  cart.reduce((acc, cur) => acc + cur.number * cur.price, 0)
+  cart.value.reduce((acc, cur) => acc + cur.number * cur.amount, 0)
 )
-const amount = computed(() =>
-  cart.reduce((acc, cur) => acc + cur.number * cur.price, 0)
-)
-
-function goToRemark() {
-  uni.navigateTo({
-    url: '/pages/remark/remark?remark=' + form.remark
-  })
-}
 
 function chooseAddress() {
-  uni.navigateTo({
-    url: '/pages/address/address?is_choose=true&scene=pay'
-  })
+  router.push({ name: 'address' })
 }
 
-function goToPackages() {
-  uni.navigateTo({
-    url: '/pages/packages/index'
-  })
+function openPopup() {
+  popup.value = true
 }
 
-function submit(orderType, address, store) {
-  if (orderType == 'takeout') {
-    ensureAddressModalVisible = true
-  } else {
-    pay(orderType, address, store)
-  }
+function closePopup() {
+  popup.value = false
 }
 
-function pay(orderType, address, store) {
+function pay(orderType: number) {
   uni.showLoading({ title: '加载中' })
-  let order = orderType == 'takein' ? orders[0] : orders[1]
-  order = Object.assign(order, { status: 1 })
-  SET_ORDER(order)
-  uni.removeStorageSync('cart')
-  uni.reLaunch({
-    url: '/pages/take-foods/take-foods'
-  })
-  uni.hideLoading()
+  order.value = {
+    status: 1,
+    userId: userStore.id!,
+    addressBookId: addressStore.getId!,
+    payMethod: orderType,
+    amount: total.value,
+    remark: form.remark,
+    phone: address.value!.phone!,
+    adress: address.value!.detail!,
+    consignee: address.value!.consignee!
+  }
+  console.log(order.value)
+  orderApi
+    .submitOrder(order.value)
+    .then((res) => {
+      if (!res.data) {
+        uni.showToast({
+          title: '下单失败',
+          icon: 'none',
+          duration: 2000
+        })
+        return
+      }
+      order.value = res.data
+      orderApi.payOrder(order.value!).then((res) => {
+        uni.hideLoading()
+        if (res.data === '支付成功') {
+          uni.showToast({
+            title: '支付成功',
+            icon: 'success',
+            duration: 2000
+          })
+          router.back()
+        } else {
+          uni.showToast({
+            title: '支付失败',
+            icon: 'none',
+            duration: 2000
+          })
+        }
+      })
+    })
+    .catch(() => {
+      uni.hideLoading()
+      uni.showToast({
+        title: '支付失败',
+        icon: 'none',
+        duration: 2000
+      })
+    })
 }
 </script>
 
@@ -241,22 +211,8 @@ function pay(orderType, address, store) {
 }
 
 .arrow {
-  width: 50rpx;
-  height: 50rpx;
   position: relative;
   margin-right: -10rpx;
-}
-
-.location {
-  .store-name {
-    font-size: $font-size-lg;
-  }
-
-  .iconfont {
-    font-size: 50rpx;
-    line-height: 100%;
-    color: $color-primary;
-  }
 }
 
 .section-1 {
@@ -277,42 +233,24 @@ function pay(orderType, address, store) {
   }
 }
 
-.payment {
-  margin-bottom: 30rpx;
-
-  .disabled {
-    color: $text-color-grey;
-  }
-
-  .payment-icon {
-    font-size: 44rpx;
-    margin-right: 10rpx;
-  }
-
-  .checkbox {
-    font-size: 36rpx;
-    margin-left: 10rpx;
-  }
-
-  .checked {
-    color: $color-primary;
-  }
-}
-
-.pay-box {
-  box-shadow: 0 0 20rpx rgba(0, 0, 0, 0.1);
-  height: 100rpx;
-}
-
-.modal-content {
-  .change-address-btn {
-    line-height: 2;
-    padding: 0 1em;
-  }
-  .pay_btn {
-    width: 100%;
-    border-radius: 50rem !important;
-    line-height: 3;
+.pay_btn {
+  display: flex;
+  justify-content: space-around;
+  width: 600rpx;
+  line-height: 100rpx;
+  position: absolute;
+  bottom: 30rpx;
+  left: 80rpx;
+  background-color: $color-primary;
+  border-radius: 60rpx;
+  font-size: 30rpx;
+  .pay {
+    display: flex;
+    align-items: center;
+    color: #ffffff;
+    .icon {
+      margin-right: 10rpx;
+    }
   }
 }
 </style>

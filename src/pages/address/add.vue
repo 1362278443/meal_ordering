@@ -80,12 +80,14 @@ onLoad((query: any) => {
   console.log(query)
   if (query['id']) {
     isEdit = true
+    console.log('修改数据')
 
     //向后端请求数据
     addressApi
       .getAddress(query['id'])
       .then((res) => {
         address.value = res.data
+        console.log(address.value)
       })
       .catch((res) => {
         Toast(res.msg)
@@ -100,6 +102,7 @@ const submit = () => {
 
   //如果是修改
   if (isEdit) {
+    console.log(address.value)
     addressApi.editAddress(address.value).then(() => {
       router.back()
     })

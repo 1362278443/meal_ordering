@@ -286,17 +286,11 @@
 
 <script setup lang="ts">
 import roundButton from '@/components/round-button.vue'
-import { onLoad } from '@dcloudio/uni-app'
+import { onLoad, onShow } from '@dcloudio/uni-app'
 import { addressApi, cartApi, categoryApi, dishApi, setmealApi } from '@/api'
 import { computed, nextTick, ref } from 'vue'
 import router from '@/router'
 import { useAddressStore, useUserStore } from '@/store'
-
-// import { mapState, mapMutations, mapActions, mapGetters } from 'vuex'
-
-onLoad(async (query: any) => {
-  await init()
-})
 
 //类型
 const categories = ref<Array<Category>>([]) // 分类列表
@@ -315,6 +309,40 @@ const store = ref({}) //店铺信息
 
 const AddressStore = useAddressStore()
 const userStore = useUserStore()
+
+onLoad(async (query: any) => {
+  await init()
+})
+
+onShow(async () => {
+  //获取购物车数据
+  await cartApi.getCartList().then((res) => {
+    cart.value = res.data
+  })
+
+  //获取默认地址
+  //查看是否有地址
+  if (AddressStore.id) {
+    console.log('有地址')
+    await addressApi.getAddress(AddressStore.id!).then((res) => {
+      address.value = res.data
+    })
+  } else {
+    //没有则获取
+    console.log('获取地址')
+    await addressApi
+      .getDefaultAddress()
+      .then((res) => {
+        console.log('默认地址', res.data.id)
+        AddressStore.setAddress(res.data.id)
+        address.value = res.data
+      })
+      .catch((err) => {
+        //没有默认地址跳转到添加地址页面
+        router.push({ name: 'address' })
+      })
+  }
+})
 
 //计算属性
 const goodCartNum = computed(() => {
@@ -353,34 +381,11 @@ const getCartGoodsPrice = computed(() => {
 const init = async () => {
   //页面初始化
   loading.value = true
-  //获取默认地址
-  //查看是否有地址
-  if (!useAddressStore().isEmpty) {
-    await addressApi.getAddress(useAddressStore().getId!)
-  } else {
-    //没有则获取
-    console.log('获取地址')
-    await addressApi
-      .getDefaultAddress()
-      .then((res) => {
-        console.log('默认地址', res.data.id)
-        AddressStore.setAddress(res.data.id)
-        address.value = res.data
-      })
-      .catch((err) => {
-        //没有默认地址跳转到添加地址页面
-        router.push({ name: 'address' })
-      })
-  }
 
   //获取类别
   await categoryApi.getCategoryList().then((res) => {
     categories.value = res.data
     changeCurrentCateId(categories.value[0].id, categories.value[0].type)
-  })
-  //获取购物车数据
-  await cartApi.getCartList().then((res) => {
-    cart.value = res.data
   })
 
   loading.value = false
@@ -460,13 +465,15 @@ const handleAddToCart = async (cate_id: number, good: Dish, num: number) => {
   // console.log(good)
   //取出商品的属性
   let flavors: any[] = []
-  good.flavors!.forEach(({ default_value, value }) => {
-    value.forEach((v, index) => {
-      if (index == default_value) {
-        flavors.push(v)
-      }
+  if (good.flavors) {
+    good.flavors!.forEach(({ default_value, value }) => {
+      value.forEach((v, index) => {
+        if (index == default_value) {
+          flavors.push(v)
+        }
+      })
     })
-  })
+  }
 
   const cartItem: Cart = {
     id: undefined,

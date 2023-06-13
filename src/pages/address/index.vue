@@ -43,7 +43,7 @@
 </template>
 
 <script setup lang="ts">
-import { onLoad } from '@dcloudio/uni-app'
+import { onLoad, onShow } from '@dcloudio/uni-app'
 import { addressApi } from '@/api'
 import router from '@/router'
 import { ref } from 'vue'
@@ -55,7 +55,7 @@ const addressList = ref<Array<Address>>([])
 
 const currentAddress = ref(addressStore.id)
 
-onLoad(() => {
+onShow(() => {
   //获取地址列表
   addressApi.getAddressList().then((res) => {
     addressList.value = res.data
@@ -68,7 +68,11 @@ const addAddress = () => {
 
 //删除地址
 const removeAddress = (id: number) => {
-  addressApi.removeAddress(id)
+  addressApi.removeAddress(id).then(() => {
+    addressApi.getAddressList().then((res) => {
+      addressList.value = res.data
+    })
+  })
 }
 
 const editAddress = (id: number) => {
@@ -90,7 +94,7 @@ const selectAddress = (id: number) => {
 }
 
 //返回
-const back = async () => {
+const back = () => {
   router.back()
 }
 </script>
@@ -142,7 +146,7 @@ const back = async () => {
   justify-content: space-around;
   width: 600rpx;
   line-height: 100rpx;
-  position: absolute;
+  position: sticky;
   bottom: 30rpx;
   left: 80rpx;
   background-color: $color-primary;

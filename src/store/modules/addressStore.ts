@@ -8,15 +8,12 @@ const useAddressStore = defineStore({
   id: 'address',
   state: (): AddressStore => ({}),
   getters: {
-    isEmpty: (state) => {
-      return state.id === undefined
-    },
-    getId: (state) => {
-      return state.id
-    }
+    isEmpty: (state): boolean => state.id === undefined,
+    getId: (state) => state.id
   },
   actions: {
     setAddress(id: number) {
+      console.log('setAddress', id)
       this.id = id
     }
   }
